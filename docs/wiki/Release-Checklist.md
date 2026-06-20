@@ -69,8 +69,8 @@ Recommended assets:
 
 ## GitHub Decoration / 仓库装修
 
-- [ ] Add repository description: `Question-first planning app for turning rough ideas into plans and AI task briefs.`
-- [ ] Add topics: `planning`, `desktop-app`, `electron`, `openai-compatible`, `ai-tools`, `local-first`.
+- [ ] Add repository description: `Pre-vibe-coding planner that turns rough ideas into plans and AI task briefs.`
+- [ ] Add topics: `vibe-coding`, `planning`, `desktop-app`, `electron`, `openai-compatible`, `ai-tools`, `local-first`.
 - [ ] Upload release assets to GitHub Releases instead of committing binaries.
 - [ ] Copy `docs/wiki/*.md` to GitHub Wiki.
 - [ ] Pin the first public release in the repository sidebar.

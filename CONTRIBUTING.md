@@ -2,7 +2,7 @@
 
 Thanks for taking an interest in Routebook.
 
-Routebook is meant to stay small and focused: it helps people clarify ideas into plans and AI task briefs. Before adding features, ask whether the change makes the first-time planning experience clearer for non-technical users.
+Routebook is meant to stay small and focused: it helps people clarify ideas into plans and vibe coding task briefs. Before adding features, ask whether the change makes the first-time planning experience clearer for non-technical users.
 
 ## Development
 

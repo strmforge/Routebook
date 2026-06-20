@@ -47,9 +47,9 @@ Routebook will ask one question at a time. You do not need to prepare a full req
 Routebook can generate:
 
 - a human-readable plan,
-- and, for software ideas, a self-contained task brief for AI coding tools.
+- and, for software ideas, a self-contained vibe coding task brief for AI coding tools.
 
 路书可以生成：
 
 - 给人看的计划书
-- 软件类想法的 AI 任务书
+- 软件类想法的 vibe coding / AI 任务书

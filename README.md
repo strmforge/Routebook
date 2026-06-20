@@ -7,7 +7,7 @@
 你说去哪，路它来问。  
 Say where you want to go. Routebook asks the way.
 
-**路书（Routebook）** 是一个给普通人的反问式计划工具。你不需要懂技术，也不需要先写需求文档；只要用一句模糊的话开头，路书会一次只问一个问题，把想法澄清成右侧实时生长的文档，最后生成一份可执行的计划书。遇到软件类想法，它还可以生成一份“给 AI 编程工具的任务书”，交给 Codex、Kiro、Cursor、DeepSeek、通义灵码或其他工具继续实施。
+**路书（Routebook）** 是一个给普通人的反问式计划工具，也是 vibe coding 之前的想法澄清器。你不需要懂技术，也不需要先写需求文档；只要用一句模糊的话开头，路书会一次只问一个问题，把想法澄清成右侧实时生长的文档，最后生成一份可执行的计划书。遇到软件类想法，它还可以生成一份“给 AI 编程工具的任务书”，交给 Codex、Kiro、Cursor、DeepSeek、通义灵码或其他工具继续实施。
 
 路书是领航员，不是车队。它不替你执行项目，不绑定某一个模型供应商，也不试图变成复杂的本地模型平台。它只做一件事：把“我大概想做点什么”问成一条别人也能接着走的路。
 
@@ -29,6 +29,7 @@ Say where you want to go. Routebook asks the way.
 路书适合“有想法，但还没想清楚”的人：
 
 - 想把副业、产品、生活计划问成清晰路线
+- 想开始 vibe coding，但还不知道该让 AI 编程工具具体做什么
 - 想让不懂技术的人也能产出软件任务书
 - 想把不同项目放在不同窗口里，不让上下文互相污染
 - 想使用自己选择的模型服务，而不是被默认供应商锁死
@@ -38,6 +39,12 @@ Say where you want to go. Routebook asks the way.
 - 自动替你执行项目
 - 管理大量模型和推理资源
 - 做团队级项目管理或长期记忆数据库
+
+## Vibe Coding 入口
+
+很多 vibe coding 卡住的地方不是“AI 不会写代码”，而是人还没有把感觉说清楚。路书站在编程工具前面：先把一句“我想做个东西”的感觉，问成目标、约束、成功标准、非目标和任务书。
+
+你可以把路书生成的 AI 任务书交给 Codex、Cursor、Kiro、Claude Code、通义灵码或其他 AI 编程工具。路书不替这些工具写代码，它负责让它们少猜一点。
 
 ## 安装
 
@@ -169,7 +176,7 @@ MIT License. See [LICENSE](LICENSE).
 
 # Routebook
 
-Routebook is a question-first planning app for people who have ideas but do not write code.
+Routebook is a question-first planning app for people who have ideas but do not write code. It is also a pre-vibe-coding clarification tool: it turns a rough feeling into a brief that AI coding tools can actually use.
 
 Start with one rough sentence. Routebook asks one plain-language question at a time, turns the conversation into a living intent document, and eventually writes a practical plan. For software ideas, it can also write a self-contained task brief that you can paste into any AI coding tool.
 
@@ -180,12 +187,18 @@ Routebook is a navigator, not the convoy. It does not execute the project for yo
 - One question at a time
 - Plain-language tradeoffs instead of technical jargon
 - Live intent document with confirmed items and guesses
-- Plan generation plus AI coding task briefs
+- Plan generation plus vibe coding task briefs
 - Isolated chat windows for separate projects
 - Chinese, English, Japanese, and Korean UI
 - OpenAI-compatible model providers, including local Ollama
 - Local data with exportable backups
 - Desktop packaging for Windows, macOS, and Linux
+
+## Vibe Coding
+
+Vibe coding often starts with a feeling, not a spec. Routebook sits before the coding agent: it asks the missing questions, records the decisions, and produces a self-contained task brief for Codex, Cursor, Kiro, Claude Code, Tongyi Lingma, or another AI coding tool.
+
+Routebook does not replace those tools. It gives them a better starting point.
 
 ## Install
 
@@ -235,4 +248,4 @@ Routebook stores model settings and window data locally. Backups exported from S
 
 ## Project Status
 
-This is an early open-source desktop release. The main goal is to make idea clarification usable for non-technical people before expanding features.
+This is an early open-source desktop release. The main goal is to make idea clarification and vibe coding preparation usable for non-technical people before expanding features.

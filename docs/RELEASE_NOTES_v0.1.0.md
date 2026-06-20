@@ -6,12 +6,12 @@ First public desktop release of Routebook / 路书.
 
 ## What It Does / 它做什么
 
-Routebook helps people clarify rough ideas into practical plans. It asks one plain-language question at a time, maintains a live intent document, and can generate:
+Routebook helps people clarify rough ideas into practical plans and vibe coding briefs. It asks one plain-language question at a time, maintains a live intent document, and can generate:
 
 - a human-readable plan,
 - and, for software ideas, a task brief for AI coding tools.
 
-路书帮助普通人把模糊想法问成可执行计划。它一次只问一个问题，右侧实时沉淀意图文档，并且可以生成：
+路书帮助普通人把模糊想法问成可执行计划，也能把 vibe coding 前的一团感觉问成任务书。它一次只问一个问题，右侧实时沉淀意图文档，并且可以生成：
 
 - 给人看的计划书
 - 软件类想法的 AI 任务书
