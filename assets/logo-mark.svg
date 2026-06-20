@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="路书 logo">
+  <rect width="96" height="96" rx="22" fill="#f7f5f0"/>
+  <path d="M18 25c12-5 22-4 30 4v44c-8-8-18-9-30-4V25Z" fill="#fffaf3" stroke="#2b2a28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M78 25c-12-5-22-4-30 4v44c8-8 18-9 30-4V25Z" fill="#fffaf3" stroke="#2b2a28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M48 30c-7 9-6 16 1 22 7 6 8 13-1 22" fill="none" stroke="#b3552e" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="48" cy="29" r="5" fill="#b3552e"/>
+  <circle cx="48" cy="74" r="4" fill="#6f7d68"/>
+</svg>

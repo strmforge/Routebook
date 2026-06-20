@@ -1,0 +1,7 @@
+{
+  "说明": "想预置一个大模型当路书的大脑：把这个文件复制一份、改名为 config.json，再改下面几行。也可以直接在路书右上角“模型”里添加。任何兼容 OpenAI 接口的服务都可以（DeepSeek、Kimi、智谱、本地 Ollama 等）。",
+  "provider": "openai-compatible",
+  "baseUrl": "https://api.deepseek.com/v1",
+  "apiKey": "在这里填你的密钥",
+  "model": "deepseek-chat"
+}

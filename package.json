@@ -1,0 +1,62 @@
+{
+  "name": "routebook",
+  "version": "0.1.0",
+  "description": "路书：你说去哪，路它来问",
+  "desktopName": "routebook",
+  "homepage": "https://github.com/strmforge/Routebook",
+  "author": {
+    "name": "strmforge",
+    "email": "opensource@example.com"
+  },
+  "main": "desktop/main.js",
+  "scripts": {
+    "start": "node server.js",
+    "desktop": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "smoke": "node scripts/smoke-test.js",
+    "screenshots": "electron scripts/capture-screenshots.js"
+  },
+  "build": {
+    "appId": "com.strmforge.routebook",
+    "productName": "路书",
+    "files": [
+      "desktop/**/*",
+      "assets/**/*",
+      "index.html",
+      "server.js",
+      "README.md",
+      "config.example.json"
+    ],
+    "mac": {
+      "icon": "assets/icons/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "icon": "assets/icons/icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "icon": "assets/icons/icon.png",
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "maintainer": "strmforge <opensource@example.com>",
+      "syncDesktopName": true
+    },
+    "directories": {
+      "output": "release"
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3"
+  }
+}

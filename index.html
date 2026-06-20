@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>路书 · 你说去哪，路它来问</title>
+<link rel="icon" type="image/png" href="assets/icons/icon-32.png">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --panel: #ffffff;
+    --ink: #2b2a28;
+    --ink-soft: #8a857c;
+    --line: #e7e2d8;
+    --accent: #b3552e;
+    --accent-soft: #fdf0e9;
+    --confirmed: #2b2a28;
+    --guessed: #a39c8f;
+    --guessed-label: " （猜的）";
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background: var(--bg); color: var(--ink);
+    height: 100vh; display: flex; flex-direction: column;
+  }
+  header {
+    padding: 14px 28px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px; background: var(--panel);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px; display: block;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .brand-copy { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 1px; white-space: nowrap; }
+  header .sub { font-size: 13px; color: var(--ink-soft); }
+  header .right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .status { font-size: 12px; color: var(--ink-soft); }
+  .status.done { color: var(--accent); font-weight: 600; }
+  .model-pill {
+    border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent);
+    padding: 5px 10px; border-radius: 999px; font-size: 12px; cursor: pointer;
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .model-pill:hover { border-color: var(--accent); }
+  button.ghost {
+    border: 1px solid var(--line); background: none; color: var(--ink-soft);
+    padding: 5px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  }
+  button.ghost:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+  main { flex: 1; display: flex; min-height: 0; }
+
+  /* 左侧聊天窗口 */
+  .projects {
+    width: 230px; min-width: 210px; border-right: 1px solid var(--line);
+    background: #f1eee7; display: flex; flex-direction: column; min-height: 0;
+  }
+  .projects-head {
+    padding: 16px 14px 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .projects-head b { font-size: 13px; color: var(--ink-soft); letter-spacing: 1px; }
+  .projects-head button {
+    margin-left: auto; border: 1px solid var(--line); background: #fff; color: var(--accent);
+    width: 28px; height: 28px; border-radius: 8px; font-size: 18px; line-height: 1; cursor: pointer;
+  }
+  .project-list { flex: 1; overflow-y: auto; padding: 0 10px 12px; }
+  .project-item {
+    width: 100%; border: 1px solid transparent; background: transparent; color: var(--ink);
+    text-align: left; border-radius: 10px; padding: 10px 10px; margin-bottom: 6px; cursor: pointer;
+  }
+  .project-item.active { background: var(--panel); border-color: var(--accent); }
+  .project-item b {
+    display: block; font-size: 14px; font-weight: 600; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px;
+  }
+  .project-item span {
+    display: block; font-size: 12px; color: var(--ink-soft); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .project-actions { padding: 10px; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+  .project-actions button {
+    flex: 1; border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
+    border-radius: 8px; padding: 7px 4px; font-size: 12px; cursor: pointer;
+  }
+  .project-actions button:hover { color: var(--ink); }
+
+  /* 左：聊天 */
+  .chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .msgs { flex: 1; overflow-y: auto; padding: 26px 30px; display: flex; flex-direction: column; gap: 16px; }
+  .msg { max-width: 78%; padding: 12px 16px; border-radius: 14px; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg.thinking { color: var(--ink-soft); font-style: normal; }
+  .msg.thinking::after { content: ''; animation: dots 1.4s steps(4, end) infinite; }
+  @keyframes dots { 0% { content: ''; } 25% { content: '·'; } 50% { content: '· ·'; } 75% { content: '· · ·'; } }
+
+  .composer { padding: 16px 30px 22px; display: flex; gap: 10px; border-top: 1px solid var(--line); background: var(--panel); }
+  .composer textarea {
+    flex: 1; resize: none; border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; font-size: 15px; font-family: inherit; line-height: 1.6;
+    height: 52px; outline: none; background: var(--bg);
+  }
+  .composer textarea:focus { border-color: var(--accent); background: #fff; }
+  .composer button.send {
+    border: none; background: var(--accent); color: #fff; border-radius: 12px;
+    padding: 0 22px; font-size: 15px; cursor: pointer;
+  }
+  .composer button.send:disabled { opacity: .4; cursor: default; }
+
+  /* 右：活文档 */
+  .doc {
+    width: 42%; min-width: 360px; border-left: 1px solid var(--line);
+    background: var(--panel); overflow-y: auto; padding: 26px 28px;
+  }
+  .doc h2 { font-size: 17px; font-weight: 600; margin-bottom: 4px; min-height: 24px; }
+  .doc .legend { font-size: 12px; color: var(--ink-soft); margin-bottom: 18px; }
+  .doc .legend i { font-style: normal; color: var(--guessed); }
+  .sec { margin-bottom: 18px; }
+  .sec h3 {
+    font-size: 13px; color: var(--ink-soft); font-weight: 600;
+    letter-spacing: 2px; margin-bottom: 7px; padding-bottom: 4px; border-bottom: 1px solid var(--line);
+  }
+  .sec ul { list-style: none; }
+  .sec li { font-size: 14px; line-height: 1.7; padding: 3px 0 3px 12px; border-left: 3px solid transparent; }
+  .sec li.confirmed { color: var(--confirmed); border-left-color: var(--accent); }
+  .sec li.guessed { color: var(--guessed); border-left-color: var(--line); }
+  .sec li.guessed::after { content: var(--guessed-label); font-size: 12px; }
+  .sec .empty { color: #cfc9bd; font-size: 13px; padding-left: 12px; }
+  .flash { animation: flash 1.2s ease-out; }
+  @keyframes flash { 0% { background: var(--accent-soft); } 100% { background: transparent; } }
+
+  /* 收尾区 */
+  .finale { margin-top: 8px; padding: 16px; background: var(--accent-soft); border-radius: 12px; display: none; }
+  .finale.show { display: block; }
+  .finale p { font-size: 14px; margin-bottom: 10px; }
+  .finale button {
+    border: none; background: var(--accent); color: #fff; border-radius: 10px;
+    padding: 10px 18px; font-size: 14px; cursor: pointer;
+  }
+  .finale button:disabled { opacity: .5; }
+
+  /* 计划书弹层 */
+  .plan-view {
+    position: fixed; inset: 0; background: rgba(43,42,40,.45); display: none;
+    align-items: center; justify-content: center; padding: 30px;
+  }
+  .plan-view.show { display: flex; }
+  .plan-card {
+    background: #fff; border-radius: 16px; width: min(760px, 100%); max-height: 88vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .plan-card .bar { padding: 14px 22px; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+  .plan-card .bar b { font-size: 15px; }
+  .plan-card .bar .right { margin-left: auto; display: flex; gap: 8px; }
+  .plan-card .bar button { border: 1px solid var(--line); background: none; padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .plan-card .bar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .plan-body { overflow-y: auto; padding: 26px 32px; font-size: 15px; line-height: 1.9; }
+  .plan-body h1 { font-size: 22px; margin: 0 0 14px; }
+  .plan-body h2 { font-size: 17px; margin: 22px 0 8px; }
+  .plan-body h3 { font-size: 15px; margin: 16px 0 6px; }
+  .plan-body ul, .plan-body ol { padding-left: 22px; margin: 6px 0; }
+  .plan-body p { margin: 8px 0; }
+  .plan-body strong { color: var(--accent); }
+
+  /* 模型设置 */
+  .model-view {
+    position: fixed; inset: 0; background: rgba(43,42,40,.45); display: none;
+    align-items: center; justify-content: center; padding: 30px; z-index: 3;
+  }
+  .model-view.show { display: flex; }
+  .model-card {
+    width: min(760px, 100%); max-height: 88vh; overflow: hidden;
+    background: #fff; border-radius: 16px; display: flex; flex-direction: column;
+  }
+  .model-card .bar {
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .model-card .bar b { font-size: 15px; }
+  .model-card .bar .right { margin-left: auto; display: flex; gap: 8px; }
+  .model-card .bar button, .model-actions button {
+    border: 1px solid var(--line); background: none; padding: 7px 14px;
+    border-radius: 8px; font-size: 13px; cursor: pointer;
+  }
+  .model-card .bar button.primary, .model-actions button.primary {
+    border-color: var(--accent); background: var(--accent); color: #fff;
+  }
+  .model-body {
+    display: grid; grid-template-columns: 240px 1fr; min-height: 480px; overflow: hidden;
+  }
+  .model-list {
+    border-right: 1px solid var(--line); background: #faf8f3; padding: 14px;
+    overflow-y: auto;
+  }
+  .model-item {
+    width: 100%; text-align: left; border: 1px solid transparent; background: transparent;
+    padding: 10px 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .model-item.active { border-color: var(--accent); background: var(--accent-soft); }
+  .model-item b { display: block; font-size: 14px; margin-bottom: 3px; }
+  .model-item span { display: block; font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .model-form { padding: 18px 22px; overflow-y: auto; }
+  .model-form label { display: block; font-size: 13px; color: var(--ink-soft); margin: 13px 0 6px; }
+  .model-form input, .model-form select {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font: inherit; outline: none; background: var(--bg);
+  }
+  .model-form input:focus, .model-form select:focus { border-color: var(--accent); background: #fff; }
+  .model-note { margin-top: 12px; padding: 12px 14px; background: var(--accent-soft); border-radius: 10px; font-size: 13px; line-height: 1.7; color: var(--ink-soft); }
+  .model-actions { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 8px 0 14px; }
+  .preset-grid button {
+    border: 1px solid var(--line); background: #faf8f3; color: var(--ink);
+    border-radius: 10px; padding: 10px 12px; text-align: left; cursor: pointer;
+  }
+  .preset-grid button:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .preset-grid b { display: block; font-size: 13px; margin-bottom: 3px; }
+  .preset-grid span { display: block; font-size: 12px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 通用设置 */
+  .settings-view {
+    position: fixed; inset: 0; background: rgba(43,42,40,.45); display: none;
+    align-items: center; justify-content: center; padding: 30px; z-index: 4;
+  }
+  .settings-view.show { display: flex; }
+  .settings-card {
+    width: min(680px, 100%); max-height: 88vh; overflow: hidden;
+    background: #fff; border-radius: 16px; display: flex; flex-direction: column;
+  }
+  .settings-card .bar {
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .settings-card .bar b { font-size: 15px; }
+  .settings-card .bar .right { margin-left: auto; display: flex; gap: 8px; }
+  .settings-card .bar button {
+    border: 1px solid var(--line); background: none; padding: 7px 14px;
+    border-radius: 8px; font-size: 13px; cursor: pointer;
+  }
+  .settings-body { padding: 22px; overflow-y: auto; }
+  .settings-section { margin-bottom: 24px; }
+  .settings-section h3 {
+    font-size: 13px; color: var(--ink-soft); font-weight: 600;
+    letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .language-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .language-option {
+    border: 1px solid var(--line); background: var(--bg); border-radius: 10px;
+    padding: 10px; text-align: left; cursor: pointer; color: var(--ink);
+  }
+  .language-option.active { border-color: var(--accent); background: var(--accent-soft); }
+  .language-option b, .name-row b { display: block; font-size: 14px; margin-bottom: 3px; }
+  .language-option span, .name-row span { display: block; font-size: 12px; color: var(--ink-soft); }
+  .name-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .name-row { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #faf8f3; display: flex; gap: 10px; align-items: center; }
+  .name-row img { width: 32px; height: 32px; border-radius: 9px; flex: 0 0 auto; }
+  .about-text { font-size: 14px; line-height: 1.8; color: var(--ink); }
+  .about-text p + p { margin-top: 8px; color: var(--ink-soft); }
+  .info-list { display: grid; gap: 8px; }
+  .info-row {
+    border: 1px solid var(--line); border-radius: 10px; background: #faf8f3;
+    padding: 10px 12px; min-width: 0;
+  }
+  .info-row b { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+  .info-row code {
+    display: block; font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .settings-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .settings-actions button {
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+  }
+  .backup-note { margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--ink-soft); }
+
+  @media (max-width: 780px) {
+    header { align-items: flex-start; flex-wrap: wrap; }
+    header .right { width: 100%; margin-left: 0; flex-wrap: wrap; }
+    .language-grid, .name-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img class="brand-mark" src="assets/logo-mark.svg" alt="" aria-hidden="true">
+    <div class="brand-copy">
+      <h1 id="appName">路书</h1>
+      <span class="sub" id="tagline">你说去哪，路它来问</span>
+    </div>
+  </div>
+  <div class="right">
+    <span class="status" id="status">随便说说你想做什么，哪怕只有一句话</span>
+    <button class="model-pill" id="modelPill" onclick="openModelView()">大脑：未设置</button>
+    <button class="ghost" id="settingsBtn" onclick="openSettingsView()">设置</button>
+    <button class="ghost" id="newWindowTopBtn" onclick="newProject()">新建窗口</button>
+  </div>
+</header>
+
+<main>
+  <aside class="projects">
+    <div class="projects-head">
+      <b id="windowListTitle">聊天窗口</b>
+      <button id="newWindowSideBtn" title="新建聊天窗口" onclick="newProject()">+</button>
+    </div>
+    <div class="project-list" id="projectList"></div>
+    <div class="project-actions">
+      <button onclick="renameProject()">改名</button>
+      <button onclick="deleteProject()">删除</button>
+    </div>
+  </aside>
+
+  <section class="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="composer">
+      <textarea id="input" placeholder="比如：我想搞个副业 / 我想给爸妈装修老房子 / 我想做个小工具……" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
+      <button class="send" id="sendBtn" onclick="send()">说</button>
+    </div>
+  </section>
+
+  <aside class="doc">
+    <h2 id="docTitle">（还没有名字的计划）</h2>
+    <div class="legend" id="legendText">左边带<span style="color:var(--accent)">橙线</span>的是你确认过的；<i>灰色带"猜的"</i>是它的推测，说句话就能纠正</div>
+    <div id="sections"></div>
+    <div class="finale" id="finale">
+      <p id="finaleText">想法已经聊清楚了。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="planBtn" onclick="makePlan()">生成计划书</button>
+        <button id="specBtn" onclick="makeSpec()" style="display:none">生成给 AI 的任务书</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="plan-view" id="planView">
+  <div class="plan-card">
+    <div class="bar">
+      <b id="docKind">计划书</b>
+      <div class="right">
+        <button onclick="copyPlan()" id="copyBtn">复制全文</button>
+        <button class="primary" onclick="downloadPlan()">保存到电脑</button>
+        <button id="closePlanBtn" onclick="document.getElementById('planView').classList.remove('show')">收起</button>
+      </div>
+    </div>
+    <div class="plan-body" id="planBody"></div>
+  </div>
+</div>
+
+<div class="model-view" id="modelView">
+  <div class="model-card">
+    <div class="bar">
+      <b id="modelSettingsTitle">大脑设置</b>
+      <div class="right">
+        <button id="addBrainBtn" onclick="addOpenAIModel()">添加大脑</button>
+        <button class="primary" id="saveModelBtn" onclick="saveModelsFromView()">保存</button>
+        <button id="closeModelBtn" onclick="closeModelView()">收起</button>
+      </div>
+    </div>
+    <div class="model-body">
+      <div class="model-list" id="modelList"></div>
+      <div class="model-form">
+        <label id="presetTitle">常用预设</label>
+        <div class="preset-grid" id="presetGrid"></div>
+
+        <label>名称</label>
+        <input id="modelName" placeholder="比如：DeepSeek / Kimi / 本地 Ollama">
+
+        <label>类型</label>
+        <select id="modelProvider" onchange="renderModelFields()">
+          <option value="openai-compatible">兼容 OpenAI 的接口</option>
+        </select>
+
+        <div id="openaiFields">
+          <label>接口地址</label>
+          <input id="modelBaseUrl" placeholder="例如：https://api.deepseek.com/v1">
+
+          <label>密钥</label>
+          <input id="modelApiKey" type="password" placeholder="留空表示保留原来的密钥">
+        </div>
+
+        <label>模型名</label>
+        <input id="modelModel" placeholder="例如：deepseek-v4-pro / MiniMax-M2.7 / mimo-v2.5">
+
+        <div class="model-actions">
+          <button class="primary" onclick="setActiveModel()">设为当前大脑</button>
+          <button onclick="removeModel()">删除这个大脑</button>
+        </div>
+        <div class="model-note">路书自己不开车，只租用一个大脑来帮你反问和写任务书。添加 DeepSeek、Kimi、Ollama、OpenAI 等兼容 OpenAI 接口的服务后，就可以开始使用。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-view" id="settingsView">
+  <div class="settings-card">
+    <div class="bar">
+      <b id="settingsTitle">设置</b>
+      <div class="right">
+        <button id="closeSettingsBtn" onclick="closeSettingsView()">收起</button>
+      </div>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3 id="languageTitle">语言</h3>
+        <div class="language-grid" id="languageGrid"></div>
+      </div>
+      <div class="settings-section">
+        <h3 id="namesTitle">路书在不同语言里的名字</h3>
+        <div class="name-list" id="nameList"></div>
+      </div>
+      <div class="settings-section">
+        <h3 id="aboutTitle">关于路书</h3>
+        <div class="about-text" id="aboutText"></div>
+      </div>
+      <div class="settings-section">
+        <h3 id="dataTitle">数据和备份</h3>
+        <div class="info-list" id="appInfoList"></div>
+        <div class="settings-actions">
+          <button id="exportBackupBtn" onclick="exportBackup()">导出备份</button>
+        </div>
+        <div class="backup-note" id="backupNote">备份只包含聊天窗口、计划书和任务书，不包含模型密钥。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTIONS = ['目标','成功标准','约束','资源','风险','依赖','非目标'];
+const LANGUAGE_KEY = 'lushu_language_v1';
+const LANGUAGES = [
+  { code: 'zh', native: '中文', label: 'Chinese' },
+  { code: 'en', native: 'English', label: 'English' },
+  { code: 'ja', native: '日本語', label: 'Japanese' },
+  { code: 'ko', native: '한국어', label: 'Korean' },
+];
+const APP_NAMES = {
+  zh: { language: '中文', name: '路书', note: '把想去的地方问成一条能走的路' },
+  en: { language: 'English', name: 'Routebook', note: 'Turns a rough idea into a route you can follow' },
+  ja: { language: '日本語', name: '道しるべ', note: 'ぼんやりした思いつきを進める道筋にする' },
+  ko: { language: '한국어', name: '길잡이', note: '흐릿한 생각을 따라갈 수 있는 길로 정리합니다' },
+};
+const MODEL_PRESETS = [
+  { id: 'deepseek', name: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-v4-pro', note: '云端 API，速度和格式稳定性好' },
+  { id: 'minimax', name: 'MiniMax', baseUrl: 'https://api.minimaxi.com/v1', model: 'MiniMax-M2.7', note: '云端 API，可按需换成 MiniMax-M3' },
+  { id: 'mimo', name: 'mimo', baseUrl: 'https://token-plan-cn.xiaomimimo.com/v1', model: 'mimo-v2.5', note: '云端 API，可按需换成 mimo-v2.5-pro' },
+  { id: 'ollama', name: 'Ollama', baseUrl: 'http://127.0.0.1:11434/v1', model: 'gemma4:e4b-it-q4_K_M', note: '本机或 SSH 隧道，密钥留空' },
+];
+const I18N = {
+  zh: {
+    htmlLang: 'zh-CN',
+    tagline: '你说去哪，路它来问',
+    settings: '设置',
+    close: '收起',
+    newWindow: '新建窗口',
+    newWindowTitle: '新建聊天窗口',
+    windowList: '聊天窗口',
+    rename: '改名',
+    delete: '删除',
+    statusEmpty: '随便说说你想做什么，哪怕只有一句话',
+    statusWorking: '正在帮你把想法问清楚',
+    statusDone: '已经问清楚了 ✓',
+    brainUnset: '大脑：未设置',
+    brainPrefix: '大脑：',
+    brainUnreadable: '大脑：设置未读取',
+    docUntitled: '（还没有名字的计划）',
+    legend: '左边带<span style="color:var(--accent)">橙线</span>的是你确认过的；<i>灰色带"猜的"</i>是它的推测，说句话就能纠正',
+    guessedLabel: ' （猜的）',
+    finale: '想法已经聊清楚了。',
+    plan: '计划书',
+    spec: '给 AI 的任务书',
+    sectionLabels: { 目标:'目标', 成功标准:'成功标准', 约束:'约束', 资源:'资源', 风险:'风险', 依赖:'依赖', 非目标:'非目标' },
+    generatePlan: '生成计划书',
+    generateSpec: '生成给 AI 的任务书',
+    copy: '复制全文',
+    copied: '已复制 ✓',
+    saveToComputer: '保存到电脑',
+    inputPlaceholder: '比如：我想搞个副业 / 我想给爸妈装修老房子 / 我想做个小工具……',
+    send: '说',
+    welcome: '你好，我是路书。说说这个窗口里想聊清楚的事吧——不用想清楚再说，一句模糊的话就够了。每个窗口的聊天记录都会单独保存，互不混在一起。',
+    thinking: '在想哪个问题最值得问',
+    modelSettings: '大脑设置',
+    addBrain: '添加大脑',
+    save: '保存',
+    setActiveBrain: '设为当前大脑',
+    deleteBrain: '删除这个大脑',
+    language: '语言',
+    names: '路书在不同语言里的名字',
+    about: '关于路书',
+    aboutBody: [
+      '路书是给有想法但不写代码的普通人用的计划工具。',
+      '它不替你开车，只负责把模糊想法问清楚，沉淀成计划书；软件类想法还能生成给 AI 编程工具看的任务书。每个聊天窗口都有自己的记录和文档，互不污染。'
+    ],
+    empty: '还空着',
+    doneSubtitle: '已问清楚',
+    turnSubtitle: (n) => '聊了 ' + n + ' 轮',
+    notStarted: '还没开始',
+    renamePrompt: '给这个聊天窗口起个名字：',
+    keepOneWindow: '至少要保留一个聊天窗口。',
+    deleteConfirm: (name) => '删除「' + name + '」？这个窗口里的聊天记录和文档都会删除。',
+    sendError: (msg) => '哎呀，我这边卡住了（' + msg + '）。等几秒再说一遍试试。',
+    planBusy: '正在写，大概要一分钟……',
+    planError: (msg) => '计划书没写出来：' + msg + '\n等一会儿再点一次试试。',
+    specBusy: '正在写，大概要一分钟……',
+    specError: (msg) => '任务书没写出来：' + msg + '\n等一会儿再点一次试试。',
+    specTip: '这份任务书是写给 AI 编程工具看的。点「复制全文」，粘贴到你用的任何一个 AI 编程工具里（Codex、Kiro、Cursor、DeepSeek、通义灵码……），它就知道该做什么了。',
+    modelNameFallback: '未命名大脑',
+    newBrain: '新大脑',
+    keepOneBrain: '至少要保留一个大脑。',
+    deleteBrainConfirm: (name) => '删除「' + name + '」？',
+    modelAddressMissing: '未填写地址',
+    modelNameMissing: '未填写模型',
+    windowOpenError: (msg) => '窗口没有打开成功：' + msg,
+    presets: '常用预设',
+    apiKeyPlaceholder: '云端模型填密钥；本地 Ollama 可留空',
+    apiKeyKeepPlaceholder: '已填写；留空则保留，输入新密钥则替换',
+    data: '数据和备份',
+    appVersion: '版本',
+    configDir: '数据目录',
+    windowsDir: '聊天窗口目录',
+    modelsPath: '模型设置文件',
+    exportBackup: '导出备份',
+    backupNote: '备份只包含聊天窗口、计划书和任务书，不包含模型密钥。',
+    backupDone: '备份已导出',
+    backupError: (msg) => '备份没有导出成功：' + msg,
+  },
+  en: {
+    htmlLang: 'en',
+    tagline: 'Say where. It asks the way.',
+    settings: 'Settings',
+    close: 'Close',
+    newWindow: 'New Window',
+    newWindowTitle: 'New chat window',
+    windowList: 'Chat Windows',
+    rename: 'Rename',
+    delete: 'Delete',
+    statusEmpty: 'Start with any rough idea, even one sentence',
+    statusWorking: 'Clarifying the idea with you',
+    statusDone: 'Clarified ✓',
+    brainUnset: 'Brain: Not set',
+    brainPrefix: 'Brain: ',
+    brainUnreadable: 'Brain: Settings unreadable',
+    docUntitled: '(Untitled plan)',
+    legend: 'Items with an <span style="color:var(--accent)">orange line</span> are confirmed; <i>gray items</i> are guesses you can correct anytime',
+    guessedLabel: ' (guess)',
+    finale: 'The idea is clear enough now.',
+    plan: 'Plan',
+    spec: 'AI Task Brief',
+    sectionLabels: { 目标:'Goals', 成功标准:'Success', 约束:'Constraints', 资源:'Resources', 风险:'Risks', 依赖:'Dependencies', 非目标:'Non-goals' },
+    generatePlan: 'Generate Plan',
+    generateSpec: 'Generate AI Task Brief',
+    copy: 'Copy',
+    copied: 'Copied ✓',
+    saveToComputer: 'Save',
+    inputPlaceholder: 'Example: I want a side project / I want to renovate my parents’ home / I want a small tool...',
+    send: 'Send',
+    welcome: 'Hi, I am Routebook. Tell me what you want to clarify in this window. It can be rough; one sentence is enough. Each window keeps its own chat history and document.',
+    thinking: 'Finding the most useful next question',
+    modelSettings: 'Brain Settings',
+    addBrain: 'Add Brain',
+    save: 'Save',
+    setActiveBrain: 'Set Active',
+    deleteBrain: 'Delete Brain',
+    language: 'Language',
+    names: 'Names Across Languages',
+    about: 'About Routebook',
+    aboutBody: [
+      'Routebook is a planning tool for people with ideas who do not write code.',
+      'It does not drive the work for you. It asks the right questions, turns vague thoughts into a plan, and for software ideas it can write an implementation brief for any AI coding tool. Each chat window has its own history and document.'
+    ],
+    empty: 'Empty',
+    doneSubtitle: 'Clarified',
+    turnSubtitle: (n) => n + ' rounds',
+    notStarted: 'Not started',
+    renamePrompt: 'Name this chat window:',
+    keepOneWindow: 'Keep at least one chat window.',
+    deleteConfirm: (name) => 'Delete "' + name + '"? Its chat history and documents will be deleted.',
+    sendError: (msg) => 'I got stuck here (' + msg + '). Try again in a few seconds.',
+    planBusy: 'Writing. This may take about a minute...',
+    planError: (msg) => 'The plan was not generated: ' + msg + '\nTry again in a moment.',
+    specBusy: 'Writing. This may take about a minute...',
+    specError: (msg) => 'The task brief was not generated: ' + msg + '\nTry again in a moment.',
+    specTip: 'This brief is for AI coding tools. Copy it into Codex, Kiro, Cursor, DeepSeek, Tongyi Lingma, or another AI coding tool so it knows what to build.',
+    modelNameFallback: 'Unnamed Brain',
+    newBrain: 'New Brain',
+    keepOneBrain: 'Keep at least one brain.',
+    deleteBrainConfirm: (name) => 'Delete "' + name + '"?',
+    modelAddressMissing: 'Missing endpoint',
+    modelNameMissing: 'Missing model',
+    windowOpenError: (msg) => 'The window did not open: ' + msg,
+    presets: 'Presets',
+    apiKeyPlaceholder: 'Use a key for cloud models; local Ollama can stay blank',
+    apiKeyKeepPlaceholder: 'Already set; leave blank to keep, enter a new key to replace',
+    data: 'Data and Backup',
+    appVersion: 'Version',
+    configDir: 'Data folder',
+    windowsDir: 'Chat windows folder',
+    modelsPath: 'Model settings file',
+    exportBackup: 'Export Backup',
+    backupNote: 'The backup includes chat windows, plans, and task briefs. It does not include model keys.',
+    backupDone: 'Backup exported',
+    backupError: (msg) => 'Backup was not exported: ' + msg,
+  },
+  ja: {
+    htmlLang: 'ja',
+    tagline: '行き先を言えば、道を問い返す',
+    settings: '設定',
+    close: '閉じる',
+    newWindow: '新しい窓',
+    newWindowTitle: '新しいチャット窓',
+    windowList: 'チャット窓',
+    rename: '名前変更',
+    delete: '削除',
+    statusEmpty: 'やりたいことを一言から話してください',
+    statusWorking: '考えを一緒に整理しています',
+    statusDone: '整理できました ✓',
+    brainUnset: '頭脳：未設定',
+    brainPrefix: '頭脳：',
+    brainUnreadable: '頭脳：設定を読めません',
+    docUntitled: '（まだ名前のない計画）',
+    legend: '<span style="color:var(--accent)">橙の線</span>は確認済み、<i>灰色</i>は推測です。いつでも直せます',
+    guessedLabel: ' （推測）',
+    finale: '考えは十分に整理できました。',
+    plan: '計画書',
+    spec: 'AI向け依頼書',
+    sectionLabels: { 目标:'目的', 成功标准:'成功条件', 约束:'制約', 资源:'使えるもの', 风险:'リスク', 依赖:'依存', 非目标:'やらないこと' },
+    generatePlan: '計画書を作る',
+    generateSpec: 'AI向け依頼書を作る',
+    copy: '全文コピー',
+    copied: 'コピー済み ✓',
+    saveToComputer: '保存',
+    inputPlaceholder: '例：副業を始めたい / 両親の家を改装したい / 小さなツールを作りたい...',
+    send: '送る',
+    welcome: 'こんにちは、道しるべです。この窓で整理したいことを話してください。まだ曖昧でも大丈夫です。一文だけで十分です。各窓の履歴と文書は別々に保存されます。',
+    thinking: '次に聞くべきことを考えています',
+    modelSettings: '頭脳設定',
+    addBrain: '頭脳を追加',
+    save: '保存',
+    setActiveBrain: '現在の頭脳にする',
+    deleteBrain: 'この頭脳を削除',
+    language: '言語',
+    names: '各言語での名前',
+    about: '道しるべについて',
+    aboutBody: [
+      '道しるべは、アイデアはあるけれどコードを書かない人のための計画ツールです。',
+      '実行そのものは代行せず、曖昧な思いつきを質問で整理して計画書にします。ソフトウェアのアイデアなら、AIコーディングツールに渡せる依頼書も作れます。各チャット窓は履歴と文書を別々に持ちます。'
+    ],
+    empty: '空です',
+    doneSubtitle: '整理済み',
+    turnSubtitle: (n) => n + ' 往復',
+    notStarted: '未開始',
+    renamePrompt: 'このチャット窓の名前：',
+    keepOneWindow: '少なくとも一つのチャット窓が必要です。',
+    deleteConfirm: (name) => '「' + name + '」を削除しますか？履歴と文書も削除されます。',
+    sendError: (msg) => 'こちらで止まりました（' + msg + '）。少し待ってもう一度試してください。',
+    planBusy: '作成中です。約1分かかります...',
+    planError: (msg) => '計画書を作れませんでした：' + msg + '\n少し待ってもう一度試してください。',
+    specBusy: '作成中です。約1分かかります...',
+    specError: (msg) => '依頼書を作れませんでした：' + msg + '\n少し待ってもう一度試してください。',
+    specTip: 'この依頼書はAIコーディングツール向けです。Codex、Kiro、Cursor、DeepSeek、通義霊碼などに貼り付けると、作るものが伝わります。',
+    modelNameFallback: '名前のない頭脳',
+    newBrain: '新しい頭脳',
+    keepOneBrain: '少なくとも一つの頭脳が必要です。',
+    deleteBrainConfirm: (name) => '「' + name + '」を削除しますか？',
+    modelAddressMissing: 'アドレス未入力',
+    modelNameMissing: 'モデル未入力',
+    windowOpenError: (msg) => '窓を開けませんでした：' + msg,
+    presets: 'よく使う設定',
+    apiKeyPlaceholder: 'クラウドモデルはキーを入力。ローカル Ollama は空で可',
+    apiKeyKeepPlaceholder: '入力済み。空なら保持、新しいキーを入れると置換',
+    data: 'データとバックアップ',
+    appVersion: 'バージョン',
+    configDir: 'データフォルダ',
+    windowsDir: 'チャット窓フォルダ',
+    modelsPath: 'モデル設定ファイル',
+    exportBackup: 'バックアップを書き出す',
+    backupNote: 'バックアップにはチャット窓、計画書、依頼書が含まれます。モデルキーは含まれません。',
+    backupDone: 'バックアップを書き出しました',
+    backupError: (msg) => 'バックアップを書き出せませんでした：' + msg,
+  },
+  ko: {
+    htmlLang: 'ko',
+    tagline: '어디로 갈지 말하면, 길을 물어봅니다',
+    settings: '설정',
+    close: '닫기',
+    newWindow: '새 창',
+    newWindowTitle: '새 채팅 창',
+    windowList: '채팅 창',
+    rename: '이름 변경',
+    delete: '삭제',
+    statusEmpty: '하고 싶은 일을 한 문장으로라도 말해 주세요',
+    statusWorking: '생각을 함께 정리하는 중',
+    statusDone: '정리 완료 ✓',
+    brainUnset: '두뇌: 미설정',
+    brainPrefix: '두뇌: ',
+    brainUnreadable: '두뇌: 설정을 읽지 못함',
+    docUntitled: '(아직 이름 없는 계획)',
+    legend: '<span style="color:var(--accent)">주황색 선</span>은 확인된 내용이고, <i>회색</i>은 추측입니다. 언제든 고칠 수 있어요',
+    guessedLabel: ' (추측)',
+    finale: '이제 생각이 충분히 정리되었습니다.',
+    plan: '계획서',
+    spec: 'AI 작업 의뢰서',
+    sectionLabels: { 目标:'목표', 成功标准:'성공 기준', 约束:'제약', 资源:'자원', 风险:'위험', 依赖:'의존', 非目标:'하지 않을 것' },
+    generatePlan: '계획서 만들기',
+    generateSpec: 'AI 작업 의뢰서 만들기',
+    copy: '전체 복사',
+    copied: '복사됨 ✓',
+    saveToComputer: '저장',
+    inputPlaceholder: '예: 부업을 하고 싶어요 / 부모님 집을 고치고 싶어요 / 작은 도구를 만들고 싶어요...',
+    send: '보내기',
+    welcome: '안녕하세요, 길잡이입니다. 이 창에서 정리하고 싶은 일을 말해 주세요. 아직 흐릿해도 괜찮습니다. 한 문장이면 충분해요. 각 창의 대화 기록과 문서는 따로 저장됩니다.',
+    thinking: '다음에 물어볼 가장 중요한 질문을 찾는 중',
+    modelSettings: '두뇌 설정',
+    addBrain: '두뇌 추가',
+    save: '저장',
+    setActiveBrain: '현재 두뇌로 설정',
+    deleteBrain: '이 두뇌 삭제',
+    language: '언어',
+    names: '언어별 이름',
+    about: '길잡이 소개',
+    aboutBody: [
+      '길잡이는 아이디어는 있지만 코드를 쓰지 않는 사람을 위한 계획 도구입니다.',
+      '일을 대신 실행하지는 않습니다. 흐릿한 생각을 질문으로 정리해 계획서로 만들고, 소프트웨어 아이디어라면 AI 코딩 도구에 줄 작업 의뢰서도 만들 수 있습니다. 각 채팅 창은 기록과 문서를 따로 가집니다.'
+    ],
+    empty: '비어 있음',
+    doneSubtitle: '정리 완료',
+    turnSubtitle: (n) => n + '회 대화',
+    notStarted: '시작 전',
+    renamePrompt: '이 채팅 창 이름:',
+    keepOneWindow: '채팅 창은 하나 이상 필요합니다.',
+    deleteConfirm: (name) => '"' + name + '"을 삭제할까요? 대화 기록과 문서도 삭제됩니다.',
+    sendError: (msg) => '여기서 막혔습니다 (' + msg + '). 잠시 뒤 다시 시도해 주세요.',
+    planBusy: '작성 중입니다. 약 1분 걸릴 수 있어요...',
+    planError: (msg) => '계획서를 만들지 못했습니다: ' + msg + '\n잠시 뒤 다시 시도해 주세요.',
+    specBusy: '작성 중입니다. 약 1분 걸릴 수 있어요...',
+    specError: (msg) => '작업 의뢰서를 만들지 못했습니다: ' + msg + '\n잠시 뒤 다시 시도해 주세요.',
+    specTip: '이 의뢰서는 AI 코딩 도구용입니다. Codex, Kiro, Cursor, DeepSeek, Tongyi Lingma 같은 도구에 붙여 넣으면 무엇을 만들지 알 수 있습니다.',
+    modelNameFallback: '이름 없는 두뇌',
+    newBrain: '새 두뇌',
+    keepOneBrain: '두뇌는 하나 이상 필요합니다.',
+    deleteBrainConfirm: (name) => '"' + name + '"을 삭제할까요?',
+    modelAddressMissing: '주소 미입력',
+    modelNameMissing: '모델 미입력',
+    windowOpenError: (msg) => '창을 열지 못했습니다: ' + msg,
+    presets: '자주 쓰는 설정',
+    apiKeyPlaceholder: '클라우드 모델은 키를 입력하고, 로컬 Ollama는 비워도 됩니다',
+    apiKeyKeepPlaceholder: '입력됨. 비우면 유지, 새 키를 입력하면 교체',
+    data: '데이터와 백업',
+    appVersion: '버전',
+    configDir: '데이터 폴더',
+    windowsDir: '채팅 창 폴더',
+    modelsPath: '모델 설정 파일',
+    exportBackup: '백업 내보내기',
+    backupNote: '백업에는 채팅 창, 계획서, 작업 의뢰서가 포함됩니다. 모델 키는 포함되지 않습니다.',
+    backupDone: '백업을 내보냈습니다',
+    backupError: (msg) => '백업을 내보내지 못했습니다: ' + msg,
+  },
+};
+let currentLanguage = loadLanguage();
+let workspace = { activeProjectId: '', projects: [] };
+let state = emptyWindowState();
+let currentDoc = 'plan';
+let modelConfig = { activeId: '', profiles: [] };
+let editingModelId = '';
+let appInfo = null;
+
+const api = window.lushuDesktop ? {
+  turn: (body) => window.lushuDesktop.turn(body),
+  plan: (body) => window.lushuDesktop.plan(body),
+  spec: (body) => window.lushuDesktop.spec(body),
+  getModels: () => window.lushuDesktop.getModels(),
+  saveModels: (body) => window.lushuDesktop.saveModels(body),
+  listWindows: () => window.lushuDesktop.listWindows(),
+  getWindow: (windowKey) => window.lushuDesktop.getWindow(windowKey),
+  createWindow: (body) => window.lushuDesktop.createWindow(body),
+  setActiveWindow: (body) => window.lushuDesktop.setActiveWindow(body),
+  renameWindow: (body) => window.lushuDesktop.renameWindow(body),
+  deleteWindow: (body) => window.lushuDesktop.deleteWindow(body),
+  importWindows: (body) => window.lushuDesktop.importWindows(body),
+  appInfo: () => window.lushuDesktop.appInfo(),
+  exportWindows: () => window.lushuDesktop.exportWindows(),
+} : {
+  turn: (body) => postJSON('/api/turn', body),
+  plan: (body) => postJSON('/api/plan', body),
+  spec: (body) => postJSON('/api/spec', body),
+  getModels: () => fetch('/api/models').then(r => r.json()),
+  saveModels: (body) => postJSON('/api/models', body),
+  listWindows: () => fetch('/api/windows').then(r => r.json()),
+  getWindow: (windowKey) => fetch('/api/windows/' + encodeURIComponent(windowKey)).then(r => r.json()),
+  createWindow: (body) => postJSON('/api/windows', body),
+  setActiveWindow: (body) => postJSON('/api/windows/active', body),
+  renameWindow: (body) => postJSON('/api/windows/rename', body),
+  deleteWindow: (body) => postJSON('/api/windows/delete', body),
+  importWindows: (body) => postJSON('/api/windows/import', body),
+  appInfo: () => fetch('/api/app-info').then(r => r.json()),
+  exportWindows: () => fetch('/api/export').then(r => r.json()),
+};
+
+async function postJSON(url, body){
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+function t(){ return I18N[currentLanguage] || I18N.zh; }
+function loadLanguage(){
+  try {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (I18N[saved]) return saved;
+  } catch(e) {}
+  const browser = (navigator.language || '').slice(0, 2);
+  return I18N[browser] ? browser : 'zh';
+}
+function saveLanguage(lang){
+  currentLanguage = I18N[lang] ? lang : 'zh';
+  try { localStorage.setItem(LANGUAGE_KEY, currentLanguage); } catch(e) {}
+  applyLanguage();
+}
+function setText(id, text){
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+function setPlaceholder(id, text){
+  const el = document.getElementById(id);
+  if (el) el.placeholder = text;
+}
+function setButtonTitle(id, text){
+  const el = document.getElementById(id);
+  if (el) el.title = text;
+}
+function appName(){ return APP_NAMES[currentLanguage].name; }
+function applyLanguage(){
+  const dict = t();
+  const name = appName();
+  document.documentElement.lang = dict.htmlLang;
+  document.title = name + ' · ' + dict.tagline;
+  document.documentElement.style.setProperty('--guessed-label', JSON.stringify(dict.guessedLabel));
+  setText('appName', name);
+  setText('tagline', dict.tagline);
+  setText('settingsBtn', dict.settings);
+  setText('newWindowTopBtn', dict.newWindow);
+  setText('windowListTitle', dict.windowList);
+  setButtonTitle('newWindowSideBtn', dict.newWindowTitle);
+  setText('finaleText', dict.finale);
+  setText('planBtn', dict.generatePlan);
+  setText('specBtn', dict.generateSpec);
+  setText('copyBtn', dict.copy);
+  setText('closePlanBtn', dict.close);
+  const savePlanBtn = document.querySelector('#planView .bar button.primary');
+  if (savePlanBtn) savePlanBtn.textContent = dict.saveToComputer;
+  const legend = document.getElementById('legendText');
+  if (legend) legend.innerHTML = dict.legend;
+  setPlaceholder('input', dict.inputPlaceholder);
+  setText('sendBtn', dict.send);
+  setText('modelSettingsTitle', dict.modelSettings);
+  setText('addBrainBtn', dict.addBrain);
+  setText('saveModelBtn', dict.save);
+  setText('closeModelBtn', dict.close);
+  const modelLabels = document.querySelectorAll('.model-form label');
+  const labelText = currentLanguage === 'zh'
+    ? ['常用预设', '名称', '类型', '接口地址', '密钥', '模型名']
+    : currentLanguage === 'ja'
+      ? ['よく使う設定', '名前', '種類', 'エンドポイント', 'キー', 'モデル名']
+      : currentLanguage === 'ko'
+        ? ['자주 쓰는 설정', '이름', '종류', '엔드포인트', '키', '모델명']
+        : ['Presets', 'Name', 'Type', 'Endpoint', 'Key', 'Model'];
+  modelLabels.forEach((label, index) => { if (labelText[index]) label.textContent = labelText[index]; });
+  const providerOption = document.querySelector('#modelProvider option');
+  if (providerOption) providerOption.textContent = currentLanguage === 'zh'
+    ? '兼容 OpenAI 的接口'
+    : currentLanguage === 'ja'
+      ? 'OpenAI互換API'
+      : currentLanguage === 'ko'
+        ? 'OpenAI 호환 API'
+        : 'OpenAI-compatible API';
+  setPlaceholder('modelName', currentLanguage === 'zh' ? '比如：DeepSeek / Kimi / 本地 Ollama' : 'DeepSeek / Kimi / local Ollama');
+  setPlaceholder('modelBaseUrl', currentLanguage === 'zh' ? '例如：https://api.deepseek.com/v1' : 'Example: https://api.deepseek.com/v1');
+  setPlaceholder('modelModel', currentLanguage === 'zh' ? '例如：deepseek-v4-pro / MiniMax-M2.7 / mimo-v2.5' : 'Example: deepseek-v4-pro / MiniMax-M2.7 / mimo-v2.5');
+  const note = document.querySelector('.model-note');
+  if (note) note.textContent = currentLanguage === 'zh'
+    ? '路书自己不开车，只租用一个大脑来帮你反问和写任务书。添加 DeepSeek、Kimi、Ollama、OpenAI 等兼容 OpenAI 接口的服务后，就可以开始使用。'
+    : currentLanguage === 'ja'
+      ? '道しるべは自分で実行せず、追加した頭脳を使って質問と依頼書作成を手伝います。DeepSeek、Kimi、Ollama、OpenAI など OpenAI 互換APIを追加してください。'
+      : currentLanguage === 'ko'
+        ? '길잡이는 일을 직접 실행하지 않고, 추가한 두뇌를 빌려 질문하고 작업 의뢰서를 만듭니다. DeepSeek, Kimi, Ollama, OpenAI 같은 OpenAI 호환 API를 추가하세요.'
+        : 'Routebook does not do the work itself. Add an OpenAI-compatible brain such as DeepSeek, Kimi, Ollama, or OpenAI so it can ask questions and write briefs.';
+  setText('settingsTitle', dict.settings);
+  setText('closeSettingsBtn', dict.close);
+  setText('languageTitle', dict.language);
+  setText('namesTitle', dict.names);
+  setText('aboutTitle', dict.about);
+  setText('dataTitle', dict.data);
+  setText('exportBackupBtn', dict.exportBackup);
+  setText('backupNote', dict.backupNote);
+  const actionButtons = document.querySelectorAll('.project-actions button');
+  if (actionButtons[0]) actionButtons[0].textContent = dict.rename;
+  if (actionButtons[1]) actionButtons[1].textContent = dict.delete;
+  const modelActionButtons = document.querySelectorAll('.model-actions button');
+  if (modelActionButtons[0]) modelActionButtons[0].textContent = dict.setActiveBrain;
+  if (modelActionButtons[1]) modelActionButtons[1].textContent = dict.deleteBrain;
+  renderSettingsContent();
+  renderPresetGrid();
+  renderModelPill();
+  renderProjects();
+  if (state.windowKey) renderDoc();
+}
+function renderSettingsContent(){
+  const dict = t();
+  const languageGrid = document.getElementById('languageGrid');
+  if (languageGrid) {
+    languageGrid.innerHTML = '';
+    LANGUAGES.forEach(lang => {
+      const btn = document.createElement('button');
+      btn.className = 'language-option' + (lang.code === currentLanguage ? ' active' : '');
+      btn.innerHTML = '<b>' + escapeHtml(lang.native) + '</b><span>' + escapeHtml(lang.label) + '</span>';
+      btn.onclick = () => saveLanguage(lang.code);
+      languageGrid.appendChild(btn);
+    });
+  }
+  const nameList = document.getElementById('nameList');
+  if (nameList) {
+    nameList.innerHTML = '';
+    LANGUAGES.forEach(lang => {
+      const item = APP_NAMES[lang.code];
+      const row = document.createElement('div');
+      row.className = 'name-row';
+      row.innerHTML = '<img src="assets/logo-mark.svg" alt=""><div><b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.language + ' · ' + item.note) + '</span></div>';
+      nameList.appendChild(row);
+    });
+  }
+  const about = document.getElementById('aboutText');
+  if (about) about.innerHTML = dict.aboutBody.map(p => '<p>' + escapeHtml(p) + '</p>').join('');
+  renderAppInfo();
+}
+async function openSettingsView(){
+  if (!appInfo) await loadAppInfo();
+  renderSettingsContent();
+  document.getElementById('settingsView').classList.add('show');
+}
+function closeSettingsView(){
+  document.getElementById('settingsView').classList.remove('show');
+}
+async function loadAppInfo(){
+  try {
+    const data = await api.appInfo();
+    if (data && !data.error) appInfo = data;
+  } catch(e) {}
+  renderAppInfo();
+}
+function renderAppInfo(){
+  const wrap = document.getElementById('appInfoList');
+  if (!wrap) return;
+  const dict = t();
+  const info = appInfo || {};
+  const rows = [
+    [dict.appVersion, info.version || '0.1.0'],
+    [dict.configDir, info.configDir || '-'],
+    [dict.windowsDir, info.windowsDir || '-'],
+    [dict.modelsPath, info.modelsPath || '-'],
+  ];
+  wrap.innerHTML = rows.map(([label, value]) =>
+    '<div class="info-row"><b>' + escapeHtml(label) + '</b><code title="' + escapeHtml(value) + '">' + escapeHtml(value) + '</code></div>'
+  ).join('');
+}
+async function exportBackup(){
+  try {
+    const data = await api.exportWindows();
+    if (!data || data.error) throw new Error(data && data.error || 'unknown');
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lushu-backup-' + stamp + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    const btn = document.getElementById('exportBackupBtn');
+    if (btn) {
+      btn.textContent = t().backupDone;
+      setTimeout(() => btn.textContent = t().exportBackup, 1400);
+    }
+  } catch(e) {
+    alert(t().backupError(e.message));
+  }
+}
+
+function emptyIntent(){ return { 标题:'', 类型:'', 目标:[], 成功标准:[], 约束:[], 资源:[], 风险:[], 依赖:[], 非目标:[] }; }
+function emptyWindowState(){
+  return { windowKey:'', title:t().newWindow, history:[], intent:emptyIntent(), done:false, plan:null, spec:null };
+}
+function normalizeWindowFromServer(win){
+  return Object.assign(emptyWindowState(), win || {});
+}
+function normalizeIndexFromServer(index){
+  const windows = Array.isArray(index && index.windows) ? index.windows : [];
+  return {
+    activeProjectId: (index && index.activeWindowKey) || (windows[0] && windows[0].windowKey) || '',
+    projects: windows.map(w => ({
+      id: w.windowKey,
+      windowKey: w.windowKey,
+      title: w.title || t().newWindow,
+      createdAt: w.createdAt || Date.now(),
+      updatedAt: w.updatedAt || Date.now(),
+      done: !!w.done,
+      turns: w.turns || 0,
+    })),
+  };
+}
+function readJSONStorage(key){
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch(e) {
+    return null;
+  }
+}
+function legacyWindowFromProject(project){
+  if (!project || typeof project !== 'object') return null;
+  const history = Array.isArray(project.history) ? project.history : [];
+  const hasContent =
+    history.length ||
+    project.plan ||
+    project.spec ||
+    (project.intent && project.intent.标题);
+  if (!hasContent) return null;
+  return {
+    title: project.title || (project.intent && project.intent.标题) || t().newWindow,
+    createdAt: Number(project.createdAt) || Date.now(),
+    updatedAt: Number(project.updatedAt) || Date.now(),
+    history,
+    intent: project.intent || emptyIntent(),
+    done: !!project.done,
+    plan: project.plan || null,
+    spec: project.spec || null,
+  };
+}
+function collectLegacyWindows(){
+  const imported = [];
+  const seen = new Set();
+  const push = (project) => {
+    const win = legacyWindowFromProject(project);
+    if (!win) return;
+    const signature = JSON.stringify({
+      title: win.title,
+      createdAt: win.createdAt,
+      history: win.history,
+      intent: win.intent,
+      plan: win.plan,
+      spec: win.spec,
+    });
+    if (seen.has(signature)) return;
+    seen.add(signature);
+    imported.push(win);
+  };
+
+  const workspaceV1 = readJSONStorage('lushu_workspace_v1');
+  if (workspaceV1 && Array.isArray(workspaceV1.projects)) workspaceV1.projects.forEach(push);
+
+  const indexV1 = readJSONStorage('lushu_window_index_v1');
+  if (indexV1 && Array.isArray(indexV1.windows)) {
+    indexV1.windows.forEach(meta => push(readJSONStorage('lushu_window_v1:' + (meta.id || meta.windowKey))));
+  }
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('lushu_window_v1:')) push(readJSONStorage(key));
+  }
+
+  push(readJSONStorage('lushu_v1'));
+  // 兼容早期原型的旧本地存储键，迁移一次后后端统一按 windowKey 存。
+  push(readJSONStorage('wendao_v1'));
+  return imported;
+}
+async function importLegacyWindowsOnce(){
+  if (!window.localStorage || localStorage.getItem('lushu_backend_imported_v1') === '1') return null;
+  const windows = collectLegacyWindows();
+  if (!windows.length) {
+    localStorage.setItem('lushu_backend_imported_v1', '1');
+    return null;
+  }
+  const data = await api.importWindows({ windows });
+  if (data.error) throw new Error(data.error);
+  localStorage.setItem('lushu_backend_imported_v1', '1');
+  return data;
+}
+async function loadWindows(){
+  const migrated = await importLegacyWindowsOnce();
+  if (migrated && migrated.index) {
+    workspace = normalizeIndexFromServer(migrated.index);
+    state = normalizeWindowFromServer(migrated.window);
+    renderCurrentProject();
+    return;
+  }
+  const index = await api.listWindows();
+  if (index.error) throw new Error(index.error);
+  workspace = normalizeIndexFromServer(index);
+  const key = workspace.activeProjectId;
+  if (!key) return;
+  const data = await api.getWindow(key);
+  if (data.error) throw new Error(data.error);
+  workspace = normalizeIndexFromServer(data.index || index);
+  state = normalizeWindowFromServer(data.window);
+  renderCurrentProject();
+}
+async function refreshWindowIndex(){
+  const index = await api.listWindows();
+  if (!index.error) {
+    workspace = normalizeIndexFromServer(index);
+    renderProjects();
+  }
+}
+
+function addMsg(role, text, thinking){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role==='user'?'user':'bot') + (thinking?' thinking':'');
+  div.textContent = text;
+  document.getElementById('msgs').appendChild(div);
+  div.scrollIntoView({behavior:'smooth', block:'end'});
+  return div;
+}
+
+function renderProjects(){
+  const dict = t();
+  const wrap = document.getElementById('projectList');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  workspace.projects
+    .slice()
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+    .forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'project-item' + (p.id === workspace.activeProjectId ? ' active' : '');
+      btn.innerHTML = '<b>' + escapeHtml(projectTitle(p)) + '</b><span>' + escapeHtml(projectSubtitle(p)) + '</span>';
+      btn.onclick = () => switchProject(p.id);
+      wrap.appendChild(btn);
+    });
+}
+
+function projectTitle(p){
+  return (p.intent && p.intent.标题) || p.title || t().newWindow;
+}
+
+function projectSubtitle(p){
+  const dict = t();
+  if (p.done) return dict.doneSubtitle;
+  if (p.turns) return dict.turnSubtitle(p.turns);
+  if (p.history && p.history.length) return dict.turnSubtitle(p.history.filter(m => m.role === 'user').length);
+  return dict.notStarted;
+}
+
+async function switchProject(id){
+  if (workspace.activeProjectId === id) return;
+  const data = await api.setActiveWindow({ windowKey: id });
+  if (data.error) { alert(data.error); return; }
+  workspace = normalizeIndexFromServer(data.index);
+  state = normalizeWindowFromServer(data.window);
+  currentDoc = 'plan';
+  renderCurrentProject();
+}
+
+async function newProject(){
+  const data = await api.createWindow({ title: t().newWindow });
+  if (data.error) { alert(data.error); return; }
+  workspace = normalizeIndexFromServer(data.index);
+  state = normalizeWindowFromServer(data.window);
+  currentDoc = 'plan';
+  renderCurrentProject();
+  document.getElementById('input').focus();
+}
+
+async function renameProject(){
+  const oldName = projectTitle(state);
+  const name = prompt(t().renamePrompt, oldName);
+  if (name === null) return;
+  const next = name.trim();
+  if (!next) return;
+  const data = await api.renameWindow({ windowKey: state.windowKey, title: next });
+  if (data.error) { alert(data.error); return; }
+  workspace = normalizeIndexFromServer(data.index);
+  state = normalizeWindowFromServer(data.window);
+  renderCurrentProject();
+}
+
+async function deleteProject(){
+  if (workspace.projects.length <= 1) {
+    alert(t().keepOneWindow);
+    return;
+  }
+  if (!confirm(t().deleteConfirm(projectTitle(state)))) return;
+  const data = await api.deleteWindow({ windowKey: state.windowKey });
+  if (data.error) { alert(data.error); return; }
+  workspace = normalizeIndexFromServer(data.index);
+  state = normalizeWindowFromServer(data.window);
+  renderCurrentProject();
+}
+
+function renderCurrentProject(){
+  const msgs = document.getElementById('msgs');
+  msgs.innerHTML = '';
+  state.history.forEach(m => addMsg(m.role, m.text));
+  if (!state.history.length) {
+    addMsg('bot', t().welcome);
+  }
+  renderDoc();
+  renderProjects();
+}
+
+function renderDoc(prev){
+  const dict = t();
+  document.getElementById('docTitle').textContent = state.intent.标题 || dict.docUntitled;
+  const wrap = document.getElementById('sections');
+  wrap.innerHTML = '';
+  const prevSet = new Set();
+  if (prev) SECTIONS.forEach(s => (prev[s]||[]).forEach(it => prevSet.add(s+'|'+it.内容)));
+  SECTIONS.forEach(s => {
+    const sec = document.createElement('div');
+    sec.className = 'sec';
+    const items = state.intent[s] || [];
+    let lis = items.map(it => {
+      const cls = (it.状态==='已确认'?'confirmed':'guessed') + (prev && !prevSet.has(s+'|'+it.内容) ? ' flash':'');
+      return '<li class="'+cls+'">'+escapeHtml(it.内容)+'</li>';
+    }).join('');
+    if (!lis) lis = '<div class="empty">' + escapeHtml(dict.empty) + '</div>';
+    sec.innerHTML = '<h3>'+(dict.sectionLabels[s] || s)+'</h3><ul>'+lis+'</ul>';
+    wrap.appendChild(sec);
+  });
+  document.getElementById('finale').classList.toggle('show', state.done);
+  document.getElementById('specBtn').style.display = (state.done && state.intent.类型 === '软件工具') ? '' : 'none';
+  document.getElementById('status').textContent = state.done ? dict.statusDone : (state.history.length ? dict.statusWorking : dict.statusEmpty);
+  document.getElementById('status').classList.toggle('done', state.done);
+  syncProjectTitle();
+}
+
+function escapeHtml(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+function syncProjectTitle(){
+  if (!state.windowKey) return;
+  const title = projectTitle(state);
+  workspace.projects = workspace.projects.map(p => p.windowKey === state.windowKey ? {
+    ...p,
+    title,
+    done: !!state.done,
+    turns: state.history ? state.history.filter(m => m.role === 'user').length : p.turns,
+  } : p);
+}
+
+async function send(){
+  const windowKey = state.windowKey;
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text || !windowKey) return;
+  input.value = '';
+  document.getElementById('sendBtn').disabled = true;
+  addMsg('user', text);
+  const thinking = addMsg('bot', t().thinking, true);
+  try {
+    const data = await api.turn({ windowKey, message: text, language: currentLanguage });
+    if (data.error) throw new Error(data.error);
+    if (state.windowKey === windowKey) {
+      const prev = state.intent;
+      state = normalizeWindowFromServer(data.window);
+      thinking.remove();
+      renderCurrentProject();
+      renderDoc(prev);
+    } else {
+      await refreshWindowIndex();
+    }
+  } catch(e) {
+    if (state.windowKey === windowKey) {
+      thinking.remove();
+      addMsg('bot', t().sendError(e.message));
+    } else {
+      await refreshWindowIndex();
+    }
+  }
+  if (state.windowKey === windowKey) {
+    document.getElementById('sendBtn').disabled = false;
+    input.focus();
+  }
+}
+
+async function makePlan(){
+  const windowKey = state.windowKey;
+  if (!windowKey) return;
+  const btn = document.getElementById('planBtn');
+  btn.disabled = true; btn.textContent = t().planBusy;
+  try {
+    const data = await api.plan({ windowKey, language: currentLanguage });
+    if (data.error) throw new Error(data.error);
+    if (state.windowKey === windowKey) {
+      state = normalizeWindowFromServer(data.window);
+      showDoc('plan');
+    } else {
+      await refreshWindowIndex();
+    }
+  } catch(e) {
+    if (state.windowKey === windowKey) alert(t().planError(e.message));
+  }
+  if (state.windowKey === windowKey) {
+    btn.disabled = false; btn.textContent = t().generatePlan;
+  }
+}
+
+async function makeSpec(){
+  const windowKey = state.windowKey;
+  if (!windowKey) return;
+  const btn = document.getElementById('specBtn');
+  btn.disabled = true; btn.textContent = t().specBusy;
+  try {
+    const data = await api.spec({ windowKey, language: currentLanguage });
+    if (data.error) throw new Error(data.error);
+    if (state.windowKey === windowKey) {
+      state = normalizeWindowFromServer(data.window);
+      showDoc('spec');
+    } else {
+      await refreshWindowIndex();
+    }
+  } catch(e) {
+    if (state.windowKey === windowKey) alert(t().specError(e.message));
+  }
+  if (state.windowKey === windowKey) {
+    btn.disabled = false; btn.textContent = t().generateSpec;
+  }
+}
+
+function showDoc(kind){
+  currentDoc = kind;
+  const md = kind === 'plan' ? state.plan : state.spec;
+  document.getElementById('docKind').textContent = kind === 'plan' ? t().plan : t().spec;
+  const tip = kind === 'spec'
+    ? '<p style="background:var(--accent-soft);padding:10px 14px;border-radius:10px;font-size:13px">' + escapeHtml(t().specTip) + '</p>'
+    : '';
+  document.getElementById('planBody').innerHTML = tip + mdToHtml(md || '');
+  document.getElementById('planView').classList.add('show');
+}
+
+function mdToHtml(md){
+  let h = escapeHtml(md);
+  h = h.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>');
+  h = h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h = h.replace(/^[-*] (.*)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g,'<ul>$1</ul>');
+  h = h.replace(/^\d+\. (.*)$/gm,'<li>$1</li>');
+  h = h.split(/\n{2,}/).map(b => /^<(h\d|ul|li)/.test(b.trim()) ? b : (b.trim()? '<p>'+b.replace(/\n/g,'<br>')+'</p>':'')).join('\n');
+  return h;
+}
+
+function copyPlan(){
+  const md = currentDoc === 'plan' ? state.plan : state.spec;
+  navigator.clipboard.writeText(md || '').then(()=>{
+    const b = document.getElementById('copyBtn'); b.textContent = t().copied;
+    setTimeout(()=> b.textContent=t().copy, 1500);
+  });
+}
+
+function downloadPlan(){
+  const md = currentDoc === 'plan' ? state.plan : state.spec;
+  const suffix = currentDoc === 'plan' ? '' : '-' + t().spec;
+  const blob = new Blob([md || ''], {type:'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (state.intent.标题 || t().plan) + suffix + '.md';
+  a.click();
+}
+
+async function loadModels(){
+  try {
+    const data = await api.getModels();
+    if (data.error) throw new Error(data.error);
+    modelConfig = data;
+    if (!editingModelId) editingModelId = modelConfig.activeId;
+    renderModelPill();
+    renderModelList();
+    fillModelForm();
+    if (!modelConfig.profiles.length) {
+      addOpenAIModel();
+      openModelView();
+    }
+  } catch(e) {
+    document.getElementById('modelPill').textContent = t().brainUnreadable;
+  }
+}
+
+function activeModel(){
+  return modelConfig.profiles.find(p => p.id === modelConfig.activeId) || modelConfig.profiles[0] || null;
+}
+
+function editingModel(){
+  return modelConfig.profiles.find(p => p.id === editingModelId) || modelConfig.profiles[0] || null;
+}
+
+function renderModelPill(){
+  const m = activeModel();
+  document.getElementById('modelPill').textContent = m ? t().brainPrefix + m.name : t().brainUnset;
+}
+
+function openModelView(){
+  document.getElementById('modelView').classList.add('show');
+  if (!modelConfig.profiles.length) addOpenAIModel();
+  editingModelId = editingModelId || modelConfig.activeId;
+  renderPresetGrid();
+  renderModelList();
+  fillModelForm();
+}
+
+function closeModelView(){
+  document.getElementById('modelView').classList.remove('show');
+}
+
+function renderModelList(){
+  const wrap = document.getElementById('modelList');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  modelConfig.profiles.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'model-item' + (p.id === editingModelId ? ' active' : '');
+    btn.innerHTML = '<b>' + escapeHtml(p.name) + (p.id === modelConfig.activeId ? ' ✓' : '') + '</b><span>' + escapeHtml(modelDesc(p)) + '</span>';
+    btn.onclick = () => {
+      commitModelForm();
+      editingModelId = p.id;
+      renderModelList();
+      fillModelForm();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderPresetGrid(){
+  const wrap = document.getElementById('presetGrid');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  MODEL_PRESETS.forEach(preset => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerHTML = '<b>' + escapeHtml(preset.name) + '</b><span>' + escapeHtml(preset.model) + '</span>';
+    btn.title = preset.baseUrl + ' · ' + preset.note;
+    btn.onclick = () => applyModelPreset(preset);
+    wrap.appendChild(btn);
+  });
+}
+
+function applyModelPreset(preset){
+  let p = editingModel();
+  if (!p) {
+    addOpenAIModel();
+    p = editingModel();
+  }
+  p.name = preset.name;
+  p.provider = 'openai-compatible';
+  p.baseUrl = preset.baseUrl;
+  p.model = preset.model;
+  if (preset.id === 'ollama') p.apiKey = '';
+  fillModelForm();
+  renderModelList();
+}
+
+function modelDesc(p){
+  return (p.baseUrl || t().modelAddressMissing) + ' · ' + (p.model || t().modelNameMissing);
+}
+
+function fillModelForm(){
+  const p = editingModel();
+  if (!p) return;
+  document.getElementById('modelName').value = p.name || '';
+  document.getElementById('modelProvider').value = 'openai-compatible';
+  document.getElementById('modelBaseUrl').value = p.baseUrl || '';
+  document.getElementById('modelApiKey').value = '';
+  document.getElementById('modelApiKey').placeholder = p.hasApiKey
+    ? t().apiKeyKeepPlaceholder
+    : t().apiKeyPlaceholder;
+  document.getElementById('modelModel').value = p.model || '';
+  renderModelFields();
+}
+
+function renderModelFields(){
+  document.getElementById('openaiFields').style.display = '';
+}
+
+function commitModelForm(){
+  const p = editingModel();
+  if (!p) return;
+  p.name = document.getElementById('modelName').value.trim() || t().modelNameFallback;
+  p.provider = 'openai-compatible';
+  p.model = document.getElementById('modelModel').value.trim();
+  p.baseUrl = document.getElementById('modelBaseUrl').value.trim();
+  const key = document.getElementById('modelApiKey').value.trim();
+  if (key) p.apiKey = key;
+  delete p.claudeCommand;
+}
+
+function addOpenAIModel(){
+  commitModelForm();
+  const id = 'custom-' + Date.now().toString(36);
+  modelConfig.profiles.push({
+    id,
+    name: t().newBrain,
+    provider: 'openai-compatible',
+    baseUrl: '',
+    apiKey: '',
+    model: '',
+  });
+  editingModelId = id;
+  renderModelList();
+  fillModelForm();
+}
+
+function setActiveModel(){
+  commitModelForm();
+  modelConfig.activeId = editingModelId;
+  renderModelPill();
+  renderModelList();
+}
+
+function removeModel(){
+  if (modelConfig.profiles.length <= 1) {
+    alert(t().keepOneBrain);
+    return;
+  }
+  const p = editingModel();
+  if (!p || !confirm(t().deleteBrainConfirm(p.name))) return;
+  modelConfig.profiles = modelConfig.profiles.filter(item => item.id !== p.id);
+  if (modelConfig.activeId === p.id) modelConfig.activeId = modelConfig.profiles[0].id;
+  editingModelId = modelConfig.activeId;
+  renderModelPill();
+  renderModelList();
+  fillModelForm();
+}
+
+async function saveModelsFromView(){
+  commitModelForm();
+  for (const p of modelConfig.profiles) {
+    if (!p.baseUrl || !p.model) {
+      editingModelId = p.id;
+      renderModelList();
+      fillModelForm();
+      alert((p.name || t().modelNameFallback) + '：' + (!p.baseUrl ? t().modelAddressMissing : t().modelNameMissing));
+      return;
+    }
+  }
+  try {
+    const data = await api.saveModels(modelConfig);
+    if (data.error) throw new Error(data.error);
+    modelConfig = data;
+    editingModelId = modelConfig.activeId;
+    renderModelPill();
+    renderModelList();
+    fillModelForm();
+    closeModelView();
+  } catch(e) {
+    alert(e.message);
+  }
+}
+
+// 恢复当前项目
+applyLanguage();
+loadWindows().catch(e => {
+  addMsg('bot', t().windowOpenError(e.message));
+});
+loadAppInfo();
+loadModels();
+if (state.plan) { /* 有历史计划书时不自动弹出，finale 按钮可再生成 */ }
+</script>
+</body>
+</html>
