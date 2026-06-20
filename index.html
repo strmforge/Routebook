@@ -287,7 +287,7 @@
 <body>
 <header>
   <div class="brand">
-    <img class="brand-mark" src="assets/logo-mark.svg" alt="" aria-hidden="true">
+    <img class="brand-mark" src="assets/logo-mark.png" alt="" aria-hidden="true">
     <div class="brand-copy">
       <h1 id="appName">路书</h1>
       <span class="sub" id="tagline">你说去哪，路它来问</span>
@@ -926,7 +926,7 @@ function renderSettingsContent(){
       const item = APP_NAMES[lang.code];
       const row = document.createElement('div');
       row.className = 'name-row';
-      row.innerHTML = '<img src="assets/logo-mark.svg" alt=""><div><b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.language + ' · ' + item.note) + '</span></div>';
+      row.innerHTML = '<img src="assets/logo-mark.png" alt=""><div><b>' + escapeHtml(item.name) + '</b><span>' + escapeHtml(item.language + ' · ' + item.note) + '</span></div>';
       nameList.appendChild(row);
     });
   }

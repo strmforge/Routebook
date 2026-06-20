@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo-mark.png" alt="Routebook logo" width="96" height="96">
+  <img src="assets/logo-full.png" alt="Routebook logo" width="320">
 </p>
 
 # 路书 / Routebook
