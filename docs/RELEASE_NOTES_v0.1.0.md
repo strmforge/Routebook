@@ -29,12 +29,13 @@ Routebook helps people clarify rough ideas into practical plans. It asks one pla
 
 ## Download / 下载
 
-- Windows installer: `路书 Setup 0.1.0.exe`
-- Windows portable zip: `路书-0.1.0-win.zip`
-- macOS Intel: `路书-0.1.0.dmg`
-- macOS Apple Silicon: `路书-0.1.0-arm64.dmg`
-- Linux x64: `路书-0.1.0.AppImage`
-- Linux arm64: `路书-0.1.0-arm64.AppImage`
+- Windows installer: `Routebook-Setup-0.1.0.exe`
+- Windows portable zip: `Routebook-0.1.0-x64.zip`
+- Windows arm64 portable zip: `Routebook-0.1.0-arm64.zip`
+- macOS Intel: `Routebook-0.1.0-x64.dmg`
+- macOS Apple Silicon: `Routebook-0.1.0-arm64.dmg`
+- Linux x64: `Routebook-0.1.0-x86_64.AppImage`
+- Linux arm64: `Routebook-0.1.0-arm64.AppImage`
 
 ## Notes / 说明
 

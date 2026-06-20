@@ -4,11 +4,11 @@
 
 Download the latest build from GitHub Releases:
 
-- Windows: `路书 Setup 0.1.0.exe`
-- macOS Apple Silicon: `路书-0.1.0-arm64.dmg`
-- macOS Intel: `路书-0.1.0.dmg`
-- Linux x64: `路书-0.1.0.AppImage`
-- Linux arm64: `路书-0.1.0-arm64.AppImage`
+- Windows: `Routebook-Setup-0.1.0.exe`
+- macOS Apple Silicon: `Routebook-0.1.0-arm64.dmg`
+- macOS Intel: `Routebook-0.1.0-x64.dmg`
+- Linux x64: `Routebook-0.1.0-x86_64.AppImage`
+- Linux arm64: `Routebook-0.1.0-arm64.AppImage`
 
 从 GitHub Releases 下载对应系统的安装包即可。
 
@@ -16,7 +16,7 @@ Unsigned builds may trigger operating-system warnings:
 
 - macOS: right-click the app and choose Open.
 - Windows: SmartScreen may require Run anyway.
-- Linux: run `chmod +x 路书*.AppImage` if the AppImage is not executable.
+- Linux: run `chmod +x Routebook*.AppImage` if the AppImage is not executable.
 
 开源版默认不签名，所以第一次打开时出现系统提醒是正常现象。
 

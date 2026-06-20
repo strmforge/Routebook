@@ -37,6 +37,7 @@
     },
     "win": {
       "icon": "assets/icons/icon.ico",
+      "artifactName": "Routebook-${version}-${arch}.${ext}",
       "target": [
         "nsis",
         "zip"
@@ -44,6 +45,7 @@
     },
     "linux": {
       "icon": "assets/icons/icon.png",
+      "artifactName": "Routebook-${version}-${arch}.${ext}",
       "target": [
         "AppImage"
       ],
@@ -53,6 +55,12 @@
     },
     "directories": {
       "output": "release"
+    },
+    "dmg": {
+      "artifactName": "Routebook-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "artifactName": "Routebook-Setup-${version}.${ext}"
     }
   },
   "devDependencies": {

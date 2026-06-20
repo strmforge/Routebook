@@ -49,12 +49,12 @@ shasum -a 256 release/* > release/SHA256SUMS.txt
 
 Recommended assets:
 
-- Windows installer: `路书 Setup <version>.exe`
-- Windows portable zip: `路书-<version>-win.zip`
-- macOS Intel DMG: `路书-<version>.dmg`
-- macOS Apple Silicon DMG: `路书-<version>-arm64.dmg`
-- Linux x64 AppImage: `路书-<version>.AppImage`
-- Linux arm64 AppImage: `路书-<version>-arm64.AppImage`
+- Windows installer: `Routebook-Setup-<version>.exe`
+- Windows portable zip: `Routebook-<version>-x64.zip`
+- macOS Intel DMG: `Routebook-<version>-x64.dmg`
+- macOS Apple Silicon DMG: `Routebook-<version>-arm64.dmg`
+- Linux x64 AppImage: `Routebook-<version>-x86_64.AppImage`
+- Linux arm64 AppImage: `Routebook-<version>-arm64.AppImage`
 - `SHA256SUMS.txt`
 
 ## Manual Check / 手动检查

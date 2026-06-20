@@ -43,17 +43,17 @@ Say where you want to go. Routebook asks the way.
 
 从 [Releases](https://github.com/strmforge/Routebook/releases) 下载对应系统的安装包：
 
-- Windows：`路书 Setup 0.1.0.exe`
-- macOS Apple Silicon：`路书-0.1.0-arm64.dmg`
-- macOS Intel：`路书-0.1.0.dmg`
-- Linux x64：`路书-0.1.0.AppImage`
-- Linux arm64：`路书-0.1.0-arm64.AppImage`
+- Windows：`Routebook-Setup-0.1.0.exe`
+- macOS Apple Silicon：`Routebook-0.1.0-arm64.dmg`
+- macOS Intel：`Routebook-0.1.0-x64.dmg`
+- Linux x64：`Routebook-0.1.0-x86_64.AppImage`
+- Linux arm64：`Routebook-0.1.0-arm64.AppImage`
 
 开源版默认不做代码签名。第一次打开时，系统可能会提醒这是来自互联网或未知开发者的应用：
 
 - macOS：右键应用选择“打开”，或在系统设置里允许打开
 - Windows：SmartScreen 可能提示风险，确认来源后选择“仍要运行”
-- Linux：AppImage 可能需要先加执行权限，例如 `chmod +x 路书*.AppImage`
+- Linux：AppImage 可能需要先加执行权限，例如 `chmod +x Routebook*.AppImage`
 
 ## 添加模型
 
